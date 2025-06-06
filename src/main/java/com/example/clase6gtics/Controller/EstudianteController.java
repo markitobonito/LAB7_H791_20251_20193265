@@ -66,5 +66,38 @@ public class EstudianteController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Error al guardar el estudiante debido a una violación de integridad de datos.", e);
         }
     }
+    @PutMapping("/{id}")
+    public ResponseEntity<Estudiante> actualizarEstudiante(@PathVariable Long id, @Valid @RequestBody Estudiante estudianteDetails) {
+        Optional<Estudiante> optionalEstudiante = estudianteRepository.findById(id);
+        if (optionalEstudiante.isPresent()) {
+            Estudiante estudianteExistente = optionalEstudiante.get();
+
+            if (estudianteDetails.getNombres() != null) estudianteExistente.setNombres(estudianteDetails.getNombres());
+            if (estudianteDetails.getApellidos() != null) estudianteExistente.setApellidos(estudianteDetails.getApellidos());
+            if (estudianteDetails.getFechaNacimiento() != null) estudianteExistente.setFechaNacimiento(estudianteDetails.getFechaNacimiento());
+            if (estudianteDetails.getSexo() != null) estudianteExistente.setSexo(estudianteDetails.getSexo());
+            if (estudianteDetails.getCorreoPersonal() != null) {
+                if (estudianteDetails.getCorreoPersonal() != null && !estudianteDetails.getCorreoPersonal().equals(estudianteExistente.getCorreoPersonal()) && estudianteRepository.existsByCorreoPersonal(estudianteDetails.getCorreoPersonal())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El correo personal " + estudianteDetails.getCorreoPersonal() + " ya está en uso.");
+                }
+                estudianteExistente.setCorreoPersonal(estudianteDetails.getCorreoPersonal());
+            }
+            if (estudianteDetails.getTelefono() != null) estudianteExistente.setTelefono(estudianteDetails.getTelefono());
+            if (estudianteDetails.getDireccion() != null) estudianteExistente.setDireccion(estudianteDetails.getDireccion());
+            if (estudianteDetails.getDepartamento() != null) estudianteExistente.setDepartamento(estudianteDetails.getDepartamento());
+            if (estudianteDetails.getProvincia() != null) estudianteExistente.setProvincia(estudianteDetails.getProvincia());
+            if (estudianteDetails.getCarrera() != null) estudianteExistente.setCarrera(estudianteDetails.getCarrera());
+
+            try {
+                Estudiante estudianteActualizado = estudianteRepository.save(estudianteExistente);
+                return new ResponseEntity<>(estudianteActualizado, HttpStatus.OK);
+            } catch (DataIntegrityViolationException e) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Error al actualizar el estudiante debido a una violación de integridad de datos.", e);
+            }
+
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante con ID " + id + " no encontrado.");
+        }
+    }
 
 }
