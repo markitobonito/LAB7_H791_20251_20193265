@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -99,5 +101,20 @@ public class EstudianteController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante con ID " + id + " no encontrado.");
         }
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> eliminarEstudianteLogico(@PathVariable Long id) {
+        Optional<Estudiante> optionalEstudiante = estudianteRepository.findById(id);
+        if (optionalEstudiante.isPresent()) {
+            Estudiante estudiante = optionalEstudiante.get();
+            estudiante.setEstado(false); // Cambiar estado a inactivo
+            estudianteRepository.save(estudiante); // Guardar el cambio de estado
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Estudiante con ID " + id + " eliminado lógicamente (estado inactivo).");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Estudiante con ID " + id + " no encontrado.");
+        }
+    }
+
 
 }
